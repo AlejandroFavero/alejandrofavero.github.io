@@ -94,10 +94,15 @@ def section_head(label, title, aside=""):
 </div>'''
 
 
-def record(kind, title, detail, when):
+def video_link(url):
+    return f'<a class="lbl text-link" href="{url}" target="_blank" rel="noopener">{t("Watch video", "Ver video")} ↗</a>'
+
+
+def record(kind, title, detail, when, video=None):
+    extra = f'<p class="detail">{video_link(video)}</p>' if video else ""
     return f'''<div class="record">
 <span class="lbl faint">{kind}</span>
-<div><h3 class="title">{title}</h3><p class="detail">{detail}</p></div>
+<div><h3 class="title">{title}</h3><p class="detail">{detail}</p>{extra}</div>
 <span class="lbl accent">{when}</span>
 </div>'''
 
@@ -278,6 +283,12 @@ def feature_robomatrix():
 
 def certs_competition():
     return [
+        dict(kind=t("Competition", "Competencia"),
+             title=t("Latin American Technological Innovation Rally 2026", "Rally Latinoamericano de Innovación Tecnológica 2026"),
+             detail=t("1st place at the ESIQIE-IPN venue · Team OILX-FORCE with IPN students · Innovation area, Challenge 07: Reuse of domestic cooking oil",
+                      "1.er lugar de la sede ESIQIE-IPN · Equipo OILX-FORCE con alumnos del IPN · Área Innovación, Desafío 07: Reutilización de aceite doméstico"),
+             when=t("Oct. 16–17, 2026", "16–17 Oct. 2026"), file="rally-innovacion-2026",
+             team_photo="assets/img/certificates/rally-innovacion-2026-team.jpg", video="https://www.youtube.com/watch?v=5pYwn4xA_Og"),
         dict(kind=t("Competition", "Competencia"), title="Roboduca 2026 — Minisumo",
              detail=t("3rd place · CROFI Robotics Club, UNAM", "3.er lugar · Club de Robótica CROFI, UNAM"),
              when="2026", file="roboduca-2026"),
@@ -312,13 +323,18 @@ def cert_pdf(c):
 
 
 def records(items):
-    return "\n".join(record(c["kind"], c["title"], c["detail"], c["when"]) for c in items)
+    return "\n".join(record(c["kind"], c["title"], c["detail"], c["when"], c.get("video")) for c in items)
 
 
 def cert_card(c):
     pdf = cert_pdf(c)
     jpg = f"assets/img/certificates/{c['file']}.jpg"
-    if pdf and os.path.exists(os.path.join(ROOT, jpg)):
+    team = c.get("team_photo")
+    if team and os.path.exists(os.path.join(ROOT, team)):
+        thumb = (f'<div class="cert-thumb photo"><img src="{pre()}{team}" '
+                 f'alt="{t("Team OILX-FORCE with its first-place awards", "Equipo OILX-FORCE con sus premios de primer lugar")}" loading="lazy"></div>')
+        link = ""
+    elif pdf and os.path.exists(os.path.join(ROOT, jpg)):
         thumb = (f'<a class="cert-thumb" href="{pre()}{pdf}" target="_blank" rel="noopener">'
                  f'<img src="{pre()}{jpg}" alt="{t("Certificate", "Certificado")}: {c["title"]}" loading="lazy"></a>')
         link = f'<a class="lbl text-link" href="{pre()}{pdf}" target="_blank" rel="noopener">{t("View certificate", "Ver certificado")} ↗</a>'
@@ -326,6 +342,8 @@ def cert_card(c):
         thumb = f'<div class="cert-thumb ph"><span class="lbl">{c["title"]}</span><span class="note">{c["detail"].split(" · ")[0]}</span></div>'
         link = ""
     doc = f'<p class="lbl faint">{c["doc"]}</p>' if c.get("doc") else ""
+    if c.get("video"):
+        link = video_link(c["video"])
     return f'''<article class="cert">
 {thumb}
 <div class="cert-meta"><span class="lbl faint">{c["kind"]}</span><span class="lbl accent">{c["when"]}</span></div>
