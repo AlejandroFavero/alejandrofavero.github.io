@@ -326,6 +326,10 @@ def records(items):
     return "\n".join(record(c["kind"], c["title"], c["detail"], c["when"], c.get("video")) for c in items)
 
 
+def cert_link(pdf):
+    return f'<a class="lbl text-link" href="{pre()}{pdf}" target="_blank" rel="noopener">{t("View certificate", "Ver certificado")} ↗</a>'
+
+
 def cert_card(c):
     pdf = cert_pdf(c)
     jpg = f"assets/img/certificates/{c['file']}.jpg"
@@ -333,17 +337,17 @@ def cert_card(c):
     if team and os.path.exists(os.path.join(ROOT, team)):
         thumb = (f'<div class="cert-thumb photo"><img src="{pre()}{team}" '
                  f'alt="{t("Team OILX-FORCE with its first-place awards", "Equipo OILX-FORCE con sus premios de primer lugar")}" loading="lazy"></div>')
-        link = ""
+        link = cert_link(pdf) if pdf else ""
     elif pdf and os.path.exists(os.path.join(ROOT, jpg)):
         thumb = (f'<a class="cert-thumb" href="{pre()}{pdf}" target="_blank" rel="noopener">'
                  f'<img src="{pre()}{jpg}" alt="{t("Certificate", "Certificado")}: {c["title"]}" loading="lazy"></a>')
-        link = f'<a class="lbl text-link" href="{pre()}{pdf}" target="_blank" rel="noopener">{t("View certificate", "Ver certificado")} ↗</a>'
+        link = cert_link(pdf)
     else:
         thumb = f'<div class="cert-thumb ph"><span class="lbl">{c["title"]}</span><span class="note">{c["detail"].split(" · ")[0]}</span></div>'
         link = ""
     doc = f'<p class="lbl faint">{c["doc"]}</p>' if c.get("doc") else ""
     if c.get("video"):
-        link = video_link(c["video"])
+        link = f'<div class="cert-links">{link}{video_link(c["video"])}</div>'
     return f'''<article class="cert">
 {thumb}
 <div class="cert-meta"><span class="lbl faint">{c["kind"]}</span><span class="lbl accent">{c["when"]}</span></div>
